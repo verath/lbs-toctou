@@ -1,0 +1,13 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+version = "1.0.0"
+
+mainClassName = 'edu.chalmers.languagebasedsecurity2016.Application'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.12'
+}
