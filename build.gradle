@@ -3,7 +3,7 @@ apply plugin: 'application'
 
 version = "1.0.0"
 
-mainClassName = 'edu.chalmers.languagebasedsecurity2016.Application'
+mainClassName = 'edu.chalmers.languagebasedsecurity2016.ShoppingCart'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

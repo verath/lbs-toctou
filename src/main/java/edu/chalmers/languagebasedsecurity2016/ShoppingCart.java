@@ -4,13 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Application {
+public class ShoppingCart {
 
     private final Pocket pocket;
     private final Wallet wallet;
     private final BufferedReader reader;
 
-    public Application() throws Exception {
+    public ShoppingCart() throws Exception {
         wallet = new Wallet();
         pocket = new Pocket();
         reader = new BufferedReader(new InputStreamReader(System.in));
@@ -60,7 +60,7 @@ public class Application {
 
     public static void main(String[] args) {
         try {
-            new Application().run();
+            new ShoppingCart().run();
         } catch (Exception e) {
             System.err.println("Could not start application!");
             e.printStackTrace();
