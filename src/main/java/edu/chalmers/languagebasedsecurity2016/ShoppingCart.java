@@ -6,21 +6,38 @@ import java.io.InputStreamReader;
 
 public class ShoppingCart {
 
-    private final Pocket pocket;
-    private final Wallet wallet;
-    private final BufferedReader reader;
+    private Pocket pocket = null;
+    private Wallet wallet = null;
 
-    public ShoppingCart() throws Exception {
-        wallet = new Wallet();
-        pocket = new Pocket();
+    private final BufferedReader reader;
+    
+    /** True iff we run in race-free mode */
+    private boolean isSafe = false;
+
+    public ShoppingCart(boolean isSafe) throws Exception {
+        this.isSafe = isSafe;
+        System.out.println("Safe mode: " + isSafe + "\n");
+        
         reader = new BufferedReader(new InputStreamReader(System.in));
     }
 
     public void run() throws Exception {
-        printBalance();
-        printProductList();
-        promptProductPurchase();
-        printBalance();
+        try {
+            wallet = new Wallet();
+            pocket = new Pocket();
+
+            printBalance();
+            printProductList();
+            promptProductPurchase();
+            printBalance();
+        } finally {
+            if(pocket != null) {
+                pocket.close();
+            }
+            if(wallet != null) {
+                wallet.close();
+            }
+        }
     }
 
     private void printBalance() throws IOException {
@@ -36,9 +53,6 @@ public class ShoppingCart {
         do {
             System.out.print("What you want to buy?: ");
             productName = reader.readLine();
-            if (productName.isEmpty()) {
-                System.exit(0);
-            }
         } while (!Store.products.containsKey(productName));
 
         purchaseProduct(productName);
@@ -46,24 +60,31 @@ public class ShoppingCart {
 
     private void purchaseProduct(String productName) throws Exception {
         int cost = Store.products.get(productName);
-        int balance = wallet.getBalance();
-        // check if the amount of credits is enough, if not stop the execution.
-        if (balance < cost) {
-            System.exit(-1);
+        
+        // (is run with command line argument safe?)
+        if(isSafe) {
+            wallet.safeWithdraw(cost); // throws exception if fail => exits app
+            pocket.safeAddProduct(productName);
+        } else {
+            int balance = wallet.getBalance();
+            if (balance < cost) {
+                throw new Exception("No money left :("); // => exits app
+            }
+            
+            Thread.sleep(10*1000); // Sleep to make it easier to exploit the race
+            
+            wallet.setBalance(balance - cost);
+            pocket.addProduct(productName);
         }
-        // otherwise, withdraw the price of the product from the wallet.
-        wallet.setBalance(balance - cost);
-        // add the name of the product to the pocket file.
-        pocket.addProduct(productName);
     }
 
 
     public static void main(String[] args) {
         try {
-            new ShoppingCart().run();
+            new ShoppingCart(args.length > 0 && args[0].equals("safe")).run();
         } catch (Exception e) {
-            System.err.println("Could not start application!");
             e.printStackTrace();
+            System.exit(1);
         }
     }
 }
