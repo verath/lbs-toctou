@@ -10,14 +10,16 @@ public class ShoppingCart {
     private Wallet wallet = null;
 
     private final BufferedReader reader;
-    
-    /** True iff we run in race-free mode */
+
+    /**
+     * True iff we run in race-free mode
+     */
     private boolean isSafe = false;
 
     public ShoppingCart(boolean isSafe) throws Exception {
         this.isSafe = isSafe;
         System.out.println("Safe mode: " + isSafe + "\n");
-        
+
         reader = new BufferedReader(new InputStreamReader(System.in));
     }
 
@@ -31,10 +33,10 @@ public class ShoppingCart {
             promptProductPurchase();
             printBalance();
         } finally {
-            if(pocket != null) {
+            if (pocket != null) {
                 pocket.close();
             }
-            if(wallet != null) {
+            if (wallet != null) {
                 wallet.close();
             }
         }
@@ -60,9 +62,9 @@ public class ShoppingCart {
 
     private void purchaseProduct(String productName) throws Exception {
         int cost = Store.products.get(productName);
-        
+
         // (is run with command line argument safe?)
-        if(isSafe) {
+        if (isSafe) {
             wallet.safeWithdraw(cost); // throws exception if fail => exits app
             pocket.safeAddProduct(productName);
         } else {
@@ -70,9 +72,9 @@ public class ShoppingCart {
             if (balance < cost) {
                 throw new Exception("No money left :("); // => exits app
             }
-            
-            Thread.sleep(10*1000); // Sleep to make it easier to exploit the race
-            
+
+            Thread.sleep(10 * 1000); // Sleep to make it easier to exploit the race
+
             wallet.setBalance(balance - cost);
             pocket.addProduct(productName);
         }
